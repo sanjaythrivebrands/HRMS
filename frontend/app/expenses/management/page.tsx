@@ -148,7 +148,7 @@ export default function ManagementPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Management</h1>
+          <h1 className="text-3xl font-bold">Approval Management</h1>
           <p className="text-muted-foreground">
             Approve claims, view settlements, and configure expense policies.
           </p>

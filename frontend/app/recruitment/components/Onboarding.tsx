@@ -757,6 +757,59 @@ export default function Onboarding() {
 
 // Onboarding Checklist Component
 function OnboardingChecklist({ candidate, activeStep, setActiveStep, updateCandidate }: any) {
+  const [isJoiningDocketOpen, setIsJoiningDocketOpen] = useState(false);
+  const [joiningDocketVerifications, setJoiningDocketVerifications] = useState({
+    personalInfo: false,
+    educationalDetails: false,
+    employmentHistory: false,
+    bankDetails: false,
+    emergencyContact: false,
+    documents: false,
+  });
+
+  // Mock joining docket data (in real app, this would come from the candidate's filled form)
+  const joiningDocketData = {
+    personalInfo: {
+      fullName: candidate.candidateName,
+      dateOfBirth: '1990-05-15',
+      gender: 'Male',
+      maritalStatus: 'Single',
+      address: '123 Main Street, Bangalore, Karnataka - 560001',
+      phoneNumber: candidate.contact,
+      email: candidate.email,
+      panNumber: 'ABCDE1234F',
+      aadharNumber: '1234 5678 9012',
+    },
+    educationalDetails: [
+      { degree: 'B.Tech Computer Science', institution: 'ABC University', year: '2012', percentage: '85%' },
+      { degree: 'M.Tech Software Engineering', institution: 'XYZ University', year: '2014', percentage: '88%' },
+    ],
+    employmentHistory: [
+      { company: 'Tech Corp', position: 'Software Engineer', duration: '2014-2018', ctc: '₹800,000' },
+      { company: 'StartupXYZ', position: 'Senior Developer', duration: '2018-2023', ctc: '₹1,200,000' },
+    ],
+    bankDetails: {
+      accountNumber: '1234567890',
+      ifscCode: 'BANK0001234',
+      bankName: 'State Bank of India',
+      accountHolderName: candidate.candidateName,
+    },
+    emergencyContact: {
+      name: 'Jane Doe',
+      relationship: 'Sister',
+      phoneNumber: '+91 9876543219',
+      address: '456 Secondary Street, Mumbai, Maharashtra - 400001',
+    },
+    documents: {
+      resume: { uploaded: true, fileName: 'resume_john_doe.pdf' },
+      panCard: { uploaded: true, fileName: 'pan_john_doe.pdf' },
+      aadharCard: { uploaded: true, fileName: 'aadhar_john_doe.pdf' },
+      educationalCertificates: { uploaded: true, fileName: 'education_certificates.zip' },
+      previousExperienceLetters: { uploaded: true, fileName: 'experience_letters.pdf' },
+      bankStatement: { uploaded: true, fileName: 'bank_statement.pdf' },
+    },
+  };
+
   const [formData, setFormData] = useState({
     offeredCTC: candidate.offerDetails.offeredCTC || '',
     doj: candidate.offerDetails.doj || '',
@@ -778,10 +831,9 @@ function OnboardingChecklist({ candidate, activeStep, setActiveStep, updateCandi
     { id: 1, title: 'Offer Rollout', icon: FileText },
     { id: 2, title: 'Policy Acknowledgment', icon: Shield },
     { id: 3, title: 'Digital Joining Form', icon: FormInput },
-    { id: 4, title: 'HR Verification', icon: UserCheck },
-    { id: 5, title: 'Asset Allocation', icon: Laptop },
-    { id: 6, title: 'Probation Setup', icon: Calendar },
-    { id: 7, title: 'Welcome & Orientation', icon: Mail },
+    { id: 4, title: 'HR Verification & Asset Allocation', icon: UserCheck },
+    { id: 5, title: 'Probation Setup', icon: Calendar },
+    { id: 6, title: 'Welcome & Orientation', icon: Mail },
   ];
 
   const handleGenerateOffer = () => {
@@ -835,7 +887,7 @@ function OnboardingChecklist({ candidate, activeStep, setActiveStep, updateCandi
         verifiedBy: 'HR Team',
         verifiedDate: new Date().toISOString().split('T')[0],
       },
-      onboardingStage: 'Asset',
+      onboardingStage: 'Verification',
     });
     alert('HR Verification completed!');
   };
@@ -877,10 +929,9 @@ function OnboardingChecklist({ candidate, activeStep, setActiveStep, updateCandi
                candidate.policyAcknowledgment.leavePolicy.acknowledged && 
                candidate.policyAcknowledgment.nda.acknowledged) ||
               (step.id === 3 && candidate.joiningForm.completed) ||
-              (step.id === 4 && candidate.hrVerification.verified) ||
-              (step.id === 5 && candidate.assetAllocation.laptop.assigned) ||
-              (step.id === 6 && candidate.probation.status === 'On Probation') ||
-              (step.id === 7 && candidate.welcome.emailSent);
+              (step.id === 4 && candidate.hrVerification.verified && candidate.assetAllocation.laptop.assigned) ||
+              (step.id === 5 && candidate.probation.status === 'On Probation') ||
+              (step.id === 6 && candidate.welcome.emailSent);
 
             return (
               <button
@@ -1073,7 +1124,35 @@ function OnboardingChecklist({ candidate, activeStep, setActiveStep, updateCandi
 
         {activeStep === 4 && (
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold mb-4">Step 4: HR Verification & Employee Code Allotment</h4>
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-lg font-semibold">Step 4: HR Verification | Employee Code Allotment | Asset Allocation</h4>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsJoiningDocketOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                View Joining Docket
+              </Button>
+            </div>
+            
+            {/* Joining Docket Verification Status */}
+            {Object.values(joiningDocketVerifications).every(v => v) ? (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg mb-4">
+                <p className="text-sm text-green-800 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  All joining docket details have been verified. You can proceed with Employee Code Allotment.
+                </p>
+              </div>
+            ) : (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+                <p className="text-sm text-yellow-800 flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Please verify all joining docket details before proceeding with Employee Code Allotment.
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Employee Code *</Label>
@@ -1148,21 +1227,28 @@ function OnboardingChecklist({ candidate, activeStep, setActiveStep, updateCandi
                 placeholder="Add verification remarks..."
               />
             </div>
-            <Button onClick={handleHRVerify} className="mt-4">
+            <Button 
+              onClick={handleHRVerify} 
+              className="mt-4"
+              disabled={!Object.values(joiningDocketVerifications).every(v => v)}
+            >
               <UserCheck className="mr-2 h-4 w-4" />
               Complete HR Verification
             </Button>
+            {!Object.values(joiningDocketVerifications).every(v => v) && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Please verify all joining docket details first.
+              </p>
+            )}
             {candidate.hrVerification.verified && (
               <p className="text-sm text-green-600 mt-2">
                 ✓ Verified by {candidate.hrVerification.verifiedBy} on {format(new Date(candidate.hrVerification.verifiedDate), 'MMM dd, yyyy')}
               </p>
             )}
-          </div>
-        )}
 
-        {activeStep === 5 && (
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold mb-4">Step 5: Asset Allocation</h4>
+            {/* Asset Allocation Section */}
+            <div className="border-t pt-6 mt-6">
+              <h5 className="text-lg font-semibold mb-4">Asset Allocation</h5>
             <div className="space-y-4">
               {/* Laptop */}
               <div className="p-4 border rounded-lg">
@@ -1269,12 +1355,13 @@ function OnboardingChecklist({ candidate, activeStep, setActiveStep, updateCandi
                 )}
               </div>
             </div>
+            </div>
           </div>
         )}
 
-        {activeStep === 6 && (
+        {activeStep === 5 && (
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold mb-4">Step 6: Probation & Confirmation Setup</h4>
+            <h4 className="text-lg font-semibold mb-4">Step 5: Probation & Confirmation Setup</h4>
             <div className="space-y-4">
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="font-medium mb-2">Probation Status</p>
@@ -1309,9 +1396,9 @@ function OnboardingChecklist({ candidate, activeStep, setActiveStep, updateCandi
           </div>
         )}
 
-        {activeStep === 7 && (
+        {activeStep === 6 && (
           <div className="space-y-4">
-            <h4 className="text-lg font-semibold mb-4">Step 7: Welcome & Orientation</h4>
+            <h4 className="text-lg font-semibold mb-4">Step 6: Welcome & Orientation</h4>
             <div className="space-y-4">
               <div className="p-4 border rounded-lg">
                 <div className="flex items-center justify-between mb-3">
@@ -1358,6 +1445,311 @@ function OnboardingChecklist({ candidate, activeStep, setActiveStep, updateCandi
           </div>
         )}
       </div>
+
+      {/* Joining Docket Dialog */}
+      <Dialog open={isJoiningDocketOpen} onOpenChange={setIsJoiningDocketOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Joining Docket - {candidate.candidateName}</DialogTitle>
+            <DialogDescription>
+              Review and verify all details filled by the candidate. Check each section after verification.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Personal Information */}
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h5 className="font-semibold text-lg">Personal Information</h5>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={joiningDocketVerifications.personalInfo}
+                    onChange={(e) => setJoiningDocketVerifications({
+                      ...joiningDocketVerifications,
+                      personalInfo: e.target.checked,
+                    })}
+                    className="h-4 w-4"
+                  />
+                  <Label className="text-sm">Verified</Label>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground mb-1">Full Name</p>
+                  <p className="font-medium">{joiningDocketData.personalInfo.fullName}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Date of Birth</p>
+                  <p className="font-medium">{format(new Date(joiningDocketData.personalInfo.dateOfBirth), 'MMM dd, yyyy')}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Gender</p>
+                  <p className="font-medium">{joiningDocketData.personalInfo.gender}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Marital Status</p>
+                  <p className="font-medium">{joiningDocketData.personalInfo.maritalStatus}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-muted-foreground mb-1">Address</p>
+                  <p className="font-medium">{joiningDocketData.personalInfo.address}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Phone Number</p>
+                  <p className="font-medium">{joiningDocketData.personalInfo.phoneNumber}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Email</p>
+                  <p className="font-medium">{joiningDocketData.personalInfo.email}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">PAN Number</p>
+                  <p className="font-medium">{joiningDocketData.personalInfo.panNumber}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Aadhar Number</p>
+                  <p className="font-medium">{joiningDocketData.personalInfo.aadharNumber}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Educational Details */}
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h5 className="font-semibold text-lg">Educational Details</h5>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={joiningDocketVerifications.educationalDetails}
+                    onChange={(e) => setJoiningDocketVerifications({
+                      ...joiningDocketVerifications,
+                      educationalDetails: e.target.checked,
+                    })}
+                    className="h-4 w-4"
+                  />
+                  <Label className="text-sm">Verified</Label>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {joiningDocketData.educationalDetails.map((edu, index) => (
+                  <div key={index} className="p-3 bg-muted/50 rounded-lg">
+                    <div className="grid grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground mb-1">Degree</p>
+                        <p className="font-medium">{edu.degree}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-1">Institution</p>
+                        <p className="font-medium">{edu.institution}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-1">Year</p>
+                        <p className="font-medium">{edu.year}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-1">Percentage</p>
+                        <p className="font-medium">{edu.percentage}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Employment History */}
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h5 className="font-semibold text-lg">Employment History</h5>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={joiningDocketVerifications.employmentHistory}
+                    onChange={(e) => setJoiningDocketVerifications({
+                      ...joiningDocketVerifications,
+                      employmentHistory: e.target.checked,
+                    })}
+                    className="h-4 w-4"
+                  />
+                  <Label className="text-sm">Verified</Label>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {joiningDocketData.employmentHistory.map((emp, index) => (
+                  <div key={index} className="p-3 bg-muted/50 rounded-lg">
+                    <div className="grid grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground mb-1">Company</p>
+                        <p className="font-medium">{emp.company}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-1">Position</p>
+                        <p className="font-medium">{emp.position}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-1">Duration</p>
+                        <p className="font-medium">{emp.duration}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-1">CTC</p>
+                        <p className="font-medium">{emp.ctc}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bank Details */}
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h5 className="font-semibold text-lg">Bank Details</h5>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={joiningDocketVerifications.bankDetails}
+                    onChange={(e) => setJoiningDocketVerifications({
+                      ...joiningDocketVerifications,
+                      bankDetails: e.target.checked,
+                    })}
+                    className="h-4 w-4"
+                  />
+                  <Label className="text-sm">Verified</Label>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground mb-1">Account Number</p>
+                  <p className="font-medium">{joiningDocketData.bankDetails.accountNumber}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">IFSC Code</p>
+                  <p className="font-medium">{joiningDocketData.bankDetails.ifscCode}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Bank Name</p>
+                  <p className="font-medium">{joiningDocketData.bankDetails.bankName}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Account Holder Name</p>
+                  <p className="font-medium">{joiningDocketData.bankDetails.accountHolderName}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Emergency Contact */}
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h5 className="font-semibold text-lg">Emergency Contact</h5>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={joiningDocketVerifications.emergencyContact}
+                    onChange={(e) => setJoiningDocketVerifications({
+                      ...joiningDocketVerifications,
+                      emergencyContact: e.target.checked,
+                    })}
+                    className="h-4 w-4"
+                  />
+                  <Label className="text-sm">Verified</Label>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground mb-1">Name</p>
+                  <p className="font-medium">{joiningDocketData.emergencyContact.name}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Relationship</p>
+                  <p className="font-medium">{joiningDocketData.emergencyContact.relationship}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground mb-1">Phone Number</p>
+                  <p className="font-medium">{joiningDocketData.emergencyContact.phoneNumber}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-muted-foreground mb-1">Address</p>
+                  <p className="font-medium">{joiningDocketData.emergencyContact.address}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Documents */}
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h5 className="font-semibold text-lg">Documents</h5>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={joiningDocketVerifications.documents}
+                    onChange={(e) => setJoiningDocketVerifications({
+                      ...joiningDocketVerifications,
+                      documents: e.target.checked,
+                    })}
+                    className="h-4 w-4"
+                  />
+                  <Label className="text-sm">Verified</Label>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {Object.entries(joiningDocketData.documents).map(([key, doc]) => (
+                  <div key={key} className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+                    <div>
+                      <p className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                      <p className="text-xs text-muted-foreground">{doc.fileName}</p>
+                    </div>
+                    {doc.uploaded && (
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Verification Summary */}
+            <div className="border rounded-lg p-4 bg-muted/30">
+              <h5 className="font-semibold mb-3">Verification Summary</h5>
+              <div className="space-y-2 text-sm">
+                {Object.entries(joiningDocketVerifications).map(([key, verified]) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                    {verified ? (
+                      <Badge className="bg-green-100 text-green-800">
+                        <CheckCircle2 className="mr-1 h-3 w-3" />
+                        Verified
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-yellow-50 text-yellow-800">
+                        <Clock className="mr-1 h-3 w-3" />
+                        Pending
+                      </Badge>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {Object.values(joiningDocketVerifications).every(v => v) && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800 flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4" />
+                    All details verified! You can now proceed with Employee Code Allotment.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsJoiningDocketOpen(false)}>
+              Close
+            </Button>
+            {Object.values(joiningDocketVerifications).every(v => v) && (
+              <Button onClick={() => setIsJoiningDocketOpen(false)}>
+                All Verified - Proceed
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

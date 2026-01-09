@@ -24,6 +24,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -966,85 +967,243 @@ export default function SourcingScreening() {
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Candidate</DialogTitle>
             <DialogDescription>
               Update the candidate details below.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            {/* Same form fields as Add Dialog */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="edit-candidateName">Candidate Name *</Label>
-                <Input
-                  id="edit-candidateName"
-                  value={formData.candidateName}
-                  onChange={(e) => setFormData({ ...formData, candidateName: e.target.value })}
-                />
+          <Tabs defaultValue="interview-feedback" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="interview-feedback">Interview Feedback</TabsTrigger>
+              <TabsTrigger value="candidate-details">Candidate Details</TabsTrigger>
+            </TabsList>
+            
+            {/* Tab 1: Interview Feedback (Read-only) */}
+            <TabsContent value="interview-feedback" className="space-y-4 mt-4">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="view-recruiterFeedback">Recruiter Feedback</Label>
+                  <div className="mt-2 p-3 rounded-md border bg-muted/50 min-h-[80px]">
+                    <p className="text-sm whitespace-pre-wrap">
+                      {formData.recruiterFeedback || 'No feedback provided'}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="view-interviewerFeedback">Interviewer Feedback</Label>
+                  <div className="mt-2 p-3 rounded-md border bg-muted/50 min-h-[80px]">
+                    <p className="text-sm whitespace-pre-wrap">
+                      {formData.interviewerFeedback || 'No feedback provided'}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="view-remark">Remark</Label>
+                  <div className="mt-2 p-3 rounded-md border bg-muted/50 min-h-[60px]">
+                    <p className="text-sm whitespace-pre-wrap">
+                      {formData.remark || 'No remarks'}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="edit-contactNumber">Contact Number *</Label>
-                <Input
-                  id="edit-contactNumber"
-                  value={formData.contactNumber}
-                  onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
-                />
+            </TabsContent>
+            
+            {/* Tab 2: Candidate Details (Editable) */}
+            <TabsContent value="candidate-details" className="space-y-4 mt-4">
+              <div className="grid gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-candidateName">Candidate Name *</Label>
+                    <Input
+                      id="edit-candidateName"
+                      value={formData.candidateName}
+                      onChange={(e) => setFormData({ ...formData, candidateName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-contactNumber">Contact Number *</Label>
+                    <Input
+                      id="edit-contactNumber"
+                      value={formData.contactNumber}
+                      onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-email">Email *</Label>
+                    <Input
+                      id="edit-email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-currentOrganisation">Current Organisation</Label>
+                    <Input
+                      id="edit-currentOrganisation"
+                      value={formData.currentOrganisation}
+                      onChange={(e) => setFormData({ ...formData, currentOrganisation: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-education">Education</Label>
+                    <Input
+                      id="edit-education"
+                      value={formData.education}
+                      onChange={(e) => setFormData({ ...formData, education: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-totalExperience">Total Experience</Label>
+                    <Input
+                      id="edit-totalExperience"
+                      value={formData.totalExperience}
+                      onChange={(e) => setFormData({ ...formData, totalExperience: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-assignedTo">Assigned To</Label>
+                    <Select value={formData.assignedTo} onValueChange={(value) => setFormData({ ...formData, assignedTo: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select recruiter" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {recruiterOptions.map(recruiter => (
+                          <SelectItem key={recruiter} value={recruiter}>{recruiter}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-status">Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {statusOptions.map(status => (
+                          <SelectItem key={status} value={status}>{status}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-callingDate">Calling Date</Label>
+                  <Input
+                    id="edit-callingDate"
+                    type="date"
+                    value={formData.callingDate}
+                    onChange={(e) => setFormData({ ...formData, callingDate: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="edit-currentCTCFixed">Current CTC (Fixed)</Label>
+                    <Input
+                      id="edit-currentCTCFixed"
+                      type="number"
+                      value={formData.currentCTCFixed}
+                      onChange={(e) => setFormData({ ...formData, currentCTCFixed: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-currentCTCInHand">Current CTC (In-hand)</Label>
+                    <Input
+                      id="edit-currentCTCInHand"
+                      type="number"
+                      value={formData.currentCTCInHand}
+                      onChange={(e) => setFormData({ ...formData, currentCTCInHand: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-expectedCTC">Expected CTC</Label>
+                    <Input
+                      id="edit-expectedCTC"
+                      type="number"
+                      value={formData.expectedCTC}
+                      onChange={(e) => setFormData({ ...formData, expectedCTC: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-noticePeriod">Notice Period</Label>
+                    <Input
+                      id="edit-noticePeriod"
+                      value={formData.noticePeriod}
+                      onChange={(e) => setFormData({ ...formData, noticePeriod: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-communicationSkills">Communication Skills</Label>
+                    <Input
+                      id="edit-communicationSkills"
+                      value={formData.communicationSkills}
+                      onChange={(e) => setFormData({ ...formData, communicationSkills: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-currentLocation">Current Location</Label>
+                    <Input
+                      id="edit-currentLocation"
+                      value={formData.currentLocation}
+                      onChange={(e) => setFormData({ ...formData, currentLocation: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-willingToWorkInStartup">Willing to Work in Startup</Label>
+                    <Select value={formData.willingToWorkInStartup} onValueChange={(value) => setFormData({ ...formData, willingToWorkInStartup: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Yes">Yes</SelectItem>
+                        <SelectItem value="No">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="edit-recruiterFeedback">Recruiter Feedback</Label>
+                  <Textarea
+                    id="edit-recruiterFeedback"
+                    value={formData.recruiterFeedback}
+                    onChange={(e) => setFormData({ ...formData, recruiterFeedback: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-interviewerFeedback">Interviewer Feedback</Label>
+                  <Textarea
+                    id="edit-interviewerFeedback"
+                    value={formData.interviewerFeedback}
+                    onChange={(e) => setFormData({ ...formData, interviewerFeedback: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-remark">Remark</Label>
+                  <Textarea
+                    id="edit-remark"
+                    value={formData.remark}
+                    onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
+                    rows={2}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="edit-email">Email *</Label>
-                <Input
-                  id="edit-email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statusOptions.map(status => (
-                      <SelectItem key={status} value={status}>{status}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="edit-recruiterFeedback">Recruiter Feedback</Label>
-              <Textarea
-                id="edit-recruiterFeedback"
-                value={formData.recruiterFeedback}
-                onChange={(e) => setFormData({ ...formData, recruiterFeedback: e.target.value })}
-                rows={3}
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-interviewerFeedback">Interviewer Feedback</Label>
-              <Textarea
-                id="edit-interviewerFeedback"
-                value={formData.interviewerFeedback}
-                onChange={(e) => setFormData({ ...formData, interviewerFeedback: e.target.value })}
-                rows={3}
-              />
-            </div>
-            <div>
-              <Label htmlFor="edit-remark">Remark</Label>
-              <Textarea
-                id="edit-remark"
-                value={formData.remark}
-                onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
-                rows={2}
-              />
-            </div>
-          </div>
+            </TabsContent>
+          </Tabs>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleSave}>Update Candidate</Button>

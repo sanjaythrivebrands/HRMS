@@ -19,6 +19,7 @@ import { Search, Trash2, Edit, Plus, RefreshCcw } from 'lucide-react';
 import AddExpenseDialog from '../components/AddExpenseDialog';
 import AddAdvanceDialog from '../components/AddAdvanceDialog';
 import SettleAdvanceDialog from '../components/SettleAdvanceDialog';
+import CreateAdvanceDialog from '../components/CreateAdvanceDialog';
 
 const statusColors: Record<string, string> = {
   Requested: 'bg-amber-100 text-amber-800 border-amber-200',
@@ -45,6 +46,7 @@ export default function ExpensesAdvancesPage() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [selectedAdvance, setSelectedAdvance] = useState<any | null>(null);
   const [isSettleOpen, setIsSettleOpen] = useState(false);
+  const [isCreateAdvanceOpen, setIsCreateAdvanceOpen] = useState(false);
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -85,16 +87,22 @@ export default function ExpensesAdvancesPage() {
   const filteredExpenses = useMemo(() => {
     return expenses.filter((exp) => {
       const matchesSearch =
-        exp.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        exp.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        exp.description?.toLowerCase().includes(searchTerm.toLowerCase());
+        (exp.employeeName?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        (exp.submittedBy?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        (exp.category?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        (exp.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        (exp.vendorPayee?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        (exp.expenseId?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        (exp.referenceNo?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+        (exp.advanceId?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
 
       const matchesCategory = category === 'all' || exp.category === category;
       const matchesStatus = status === 'all' || exp.status === status;
 
+      const expenseDate = exp.dateOfExpense || exp.date;
       const matchesDate =
-        (!startDate || new Date(exp.date) >= new Date(startDate)) &&
-        (!endDate || new Date(exp.date) <= new Date(endDate));
+        (!startDate || new Date(expenseDate) >= new Date(startDate)) &&
+        (!endDate || new Date(expenseDate) <= new Date(endDate));
 
       return matchesSearch && matchesCategory && matchesStatus && matchesDate;
     });
@@ -112,6 +120,13 @@ export default function ExpensesAdvancesPage() {
 
   const handleAddAdvance = (advance: any) => {
     setAdvances((prev) => [advance, ...prev]);
+  };
+
+  const handleCreateAdvance = (advance: any) => {
+    // Handle the created advance budget allocation
+    console.log('Advance budget created:', advance);
+    // You can add it to a separate list or handle it as needed
+    alert(`Advance "${advance.advanceTitle}" created successfully!`);
   };
 
   const handleSettle = (payload: any) => {
@@ -132,14 +147,21 @@ export default function ExpensesAdvancesPage() {
     );
   };
 
+
   const getStatusVariant = (value: string) => {
     switch (value) {
+      case 'Draft':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'Submitted':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'Approved':
         return 'bg-green-100 text-green-800 border-green-200';
-      case 'Paid':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'Rejected':
         return 'bg-red-100 text-red-800 border-red-200';
+      case 'Reimbursed':
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      case 'Paid':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       default:
         return 'bg-amber-100 text-amber-800 border-amber-200';
     }
@@ -204,10 +226,13 @@ export default function ExpensesAdvancesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="Pending">Pending</SelectItem>
+                    <SelectItem value="Draft">Draft</SelectItem>
+                    <SelectItem value="Submitted">Submitted</SelectItem>
                     <SelectItem value="Approved">Approved</SelectItem>
-                    <SelectItem value="Paid">Paid</SelectItem>
                     <SelectItem value="Rejected">Rejected</SelectItem>
+                    <SelectItem value="Reimbursed">Reimbursed</SelectItem>
+                    <SelectItem value="Pending">Pending</SelectItem>
+                    <SelectItem value="Paid">Paid</SelectItem>
                   </SelectContent>
                 </Select>
                 <div className="grid grid-cols-2 gap-2">
@@ -232,12 +257,18 @@ export default function ExpensesAdvancesPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Employee</TableHead>
-                        <TableHead>Category</TableHead>
+                        <TableHead>Expense ID</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Amount</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Vendor / Payee</TableHead>
                         <TableHead>Payment Mode</TableHead>
-                        <TableHead>Receipt</TableHead>
+                        <TableHead>Reference / Invoice</TableHead>
+                        <TableHead>Advance ID</TableHead>
+                        <TableHead>Project / Campaign</TableHead>
+                        <TableHead>Department</TableHead>
+                        <TableHead>Submitted By</TableHead>
+                        <TableHead>Bill</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
@@ -245,19 +276,30 @@ export default function ExpensesAdvancesPage() {
                     <TableBody>
                       {filteredExpenses.map((expense) => (
                         <TableRow key={expense.id}>
-                          <TableCell>
-                            <div className="font-medium">{expense.employeeName}</div>
-                            <p className="text-xs text-muted-foreground">{expense.projectCode || '—'}</p>
+                          <TableCell className="font-mono text-xs">
+                            {expense.expenseId || expense.id}
                           </TableCell>
-                          <TableCell>{expense.category}</TableCell>
-                          <TableCell>{expense.date}</TableCell>
+                          <TableCell>{expense.dateOfExpense || expense.date}</TableCell>
                           <TableCell>₹{expense.amount.toLocaleString()}</TableCell>
+                          <TableCell>{expense.category}</TableCell>
+                          <TableCell>{expense.vendorPayee || '—'}</TableCell>
                           <TableCell>{expense.paymentMode}</TableCell>
+                          <TableCell className="text-xs">
+                            {expense.referenceNo || expense.invoiceNo || '—'}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {expense.advanceId || '—'}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            {expense.projectCampaign || expense.projectCode || '—'}
+                          </TableCell>
+                          <TableCell>{expense.department || '—'}</TableCell>
+                          <TableCell>{expense.submittedBy || expense.employeeName || '—'}</TableCell>
                           <TableCell>
-                            {expense.receiptUrl ? (
+                            {expense.billUpload || expense.receiptUrl ? (
                               <Button variant="outline" size="sm">View</Button>
                             ) : (
-                              <span className="text-xs text-muted-foreground">Not uploaded</span>
+                              <span className="text-xs text-muted-foreground">No file</span>
                             )}
                           </TableCell>
                           <TableCell>
@@ -289,7 +331,7 @@ export default function ExpensesAdvancesPage() {
               <RefreshCcw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
-            <Button onClick={() => setIsAddOpen(true)}>
+            <Button onClick={() => setIsCreateAdvanceOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               New Advance
             </Button>
@@ -368,9 +410,16 @@ export default function ExpensesAdvancesPage() {
         </TabsContent>
       </Tabs>
 
-      <AddExpenseDialog open={isExpenseDialogOpen} onOpenChange={setIsExpenseDialogOpen} onSave={handleAddExpense} />
+      <AddExpenseDialog 
+        open={isExpenseDialogOpen} 
+        onOpenChange={setIsExpenseDialogOpen} 
+        onSave={handleAddExpense}
+        advances={advances}
+        existingExpenses={expenses}
+      />
       <AddAdvanceDialog open={isAddOpen} onOpenChange={setIsAddOpen} onSave={handleAddAdvance} />
       <SettleAdvanceDialog open={isSettleOpen} onOpenChange={setIsSettleOpen} advance={selectedAdvance} onSettle={handleSettle} />
+      <CreateAdvanceDialog open={isCreateAdvanceOpen} onOpenChange={setIsCreateAdvanceOpen} onSave={handleCreateAdvance} />
     </div>
   );
 }
